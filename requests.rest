@@ -1,0 +1,18 @@
+
+
+GET http://localhost:3002/try-qs?a=100&b=99
+
+
+### 分隔
+
+POST http://localhost:3002/try-post
+Content-Type: application/x-www-form-urlencoded
+
+name=bill&age=28
+
+### 分隔
+
+POST http://localhost:3002/try-post
+Content-Type: application/json
+
+{"name":"peter", "age":30}
