@@ -6,13 +6,26 @@ const upload = require('./../modules/upload-imgs');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
 const jwt = require("jsonwebtoken")
-//引用 nodemailer
+//引用 nodemailer 
 const nodemailer = require('nodemailer');
 
 const router = express.Router();
 
+//Navbar購物車清單數量
+router.get('/navbarcart/:sid',async (req, res) => {
+  const membersid = req.params.sid
+  console.log('membersid',membersid)
 
-//登入時新增會員收藏
+  const cartnumsql = 'SELECT COUNT(*) FROM `cart_details` WHERE `cart_details`.`m_id`=?'
+  const[rows]=await db.query(cartnumsql, [membersid]);
+  console.log('rows',rows)
+  const num =rows[0]["COUNT(*)"]
+  res.json(num) 
+})
+
+
+ 
+//登入時新增會員收藏 
 router.post('/loginstore',async (req, res) => {
   const {mid,productarray} = req.body
   const searchsql = "SELECT `member_collection`.`productmanage` FROM `member_collection` WHERE `member_collection`.`member`=?"
@@ -580,14 +593,14 @@ router.post("/addstoretocart/:sid",async (req, res) => {
       //加到購物車
       const sql = "INSERT INTO `cart_details`(`m_id`, `product_img`, `product_ch`, `product_eg`, `product_id`, `price`, `quantity`, `created_at`) VALUES (?,?,?,?,?,?,?,NOW())";
       const [result] = await db.query(sql, [member, imgpluswebp, product_ch, product_eg, product_id,productprice,1]);
-      console.log(result)
+      console.log(result) 
       //同時刪掉該項的收藏
-       const deletingmystore = "DELETE FROM `member_collection` WHERE `member_collection`.`member`=? AND `member_collection`.`productmanage`=?"
-       const [deleting] = await db.query(deletingmystore, [member,product_id]);
+      //  const deletingmystore = "DELETE FROM `member_collection` WHERE `member_collection`.`member`=? AND `member_collection`.`productmanage`=?"
+      //  const [deleting] = await db.query(deletingmystore, [member,product_id]);
     
-       console.log(deleting)
+      //  console.log(deleting)
       
-      res.json(deleting)
+      res.json(result)
 
   }else{ 
      const {quantity}=searchrows[0]
@@ -598,12 +611,12 @@ router.post("/addstoretocart/:sid",async (req, res) => {
      const [result] = await db.query(sql, [ imgpluswebp, product_ch, product_eg, productprice, quantityplus1, now, member, product_id]);
      console.log(result)
       //同時刪掉該項的收藏
-      const deletingmystore = "DELETE FROM `member_collection` WHERE `member_collection`.`member`=? AND `member_collection`.`productmanage`=?"
-      const [deleting] = await db.query(deletingmystore, [member,product_id]);
+      // const deletingmystore = "DELETE FROM `member_collection` WHERE `member_collection`.`member`=? AND `member_collection`.`productmanage`=?"
+      // const [deleting] = await db.query(deletingmystore, [member,product_id]);
    
-      console.log(deleting) 
+      // console.log(deleting) 
      
-     res.json(deleting)
+     res.json(result)
 
 
   
@@ -788,3 +801,4 @@ router.get('/classlist/:sid',async(req,res)=>{
 
 
 module.exports = router;
+
