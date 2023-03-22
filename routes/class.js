@@ -74,14 +74,22 @@ router.post("/classform", async (req, res) => {
   try {
 
     //建立新訂單給資料庫
-    const { class_id, bartender, class_date, class_time, class_prople, phone, student, wine1, wine2 } = req.body;
+    const { class_id, bartender, class_date, class_time, class_prople, people, wine1, wine2 } = req.body;
     const classformSql = "INSERT INTO `classform`(`class_id`, `Bartender`, `class_date`, `class_time`, `class_prople`) VALUES (?,?,?,?,?)";
     const [classformRows] = await db.query(classformSql, [ class_id, bartender, class_date, class_time, class_prople]);
     console.log({classformRows})
     const classformsid = classformRows.insertId;
+
     const class_propleSql = "INSERT INTO `classbooking`(`classformsid`, `student`, `phone`) VALUES (?,?,?)";
 
-    const [result] = await db.query(class_propleSql , [classformsid, 	student, phone]);
+    for(let p of people){
+      await db.query(class_propleSql, [classformsid, p.student, p.phone]);
+    }
+
+    // const [result] = await db.query(class_propleSql , [classformsid, 	student, phone]);
+
+    // const values = people.map(({ student, phone }) => [classformsid, student, phone]);
+    // const [result] = await db.query(class_propleSql, [values]);
 
     res.json({classformsid});
 
