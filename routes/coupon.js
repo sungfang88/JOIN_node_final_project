@@ -365,7 +365,6 @@ router.post("/getMemberCoupon", async (req, res) => {
     參數: 
     memberId: (必填) 會員ＩＤ, 
     type: (選填) 優惠券類型 1 => '會員', 2 => '商品', 3 => '課程'
-
     回傳:
     itemId: coupon sid in coupon_report
     menber_sid: 會員ＩＤ
