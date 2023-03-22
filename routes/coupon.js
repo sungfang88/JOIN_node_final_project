@@ -122,7 +122,7 @@ router.post("/applyCoupon", async (req, res) => {
   }
   const coupon = await getMemberCoupon(memberId, itemId);
   //確認有券存在
-  if (!coupon && !coupon.sid) {
+  if (!coupon || !coupon.sid) {
     return res.json({ success: false, error: "優惠券不存在" });
   }
   //確認券使用
