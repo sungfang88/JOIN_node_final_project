@@ -122,11 +122,11 @@ router.post("/applyCoupon", async (req, res) => {
   }
   const coupon = await getMemberCoupon(memberId, itemId);
   //確認有券存在
-  if (coupon.length <= 0) {
+  if (!coupon && !coupon.sid) {
     return res.json({ success: false, error: "優惠券不存在" });
   }
   //確認券使用
-  if (coupon[0].order_sid !== null) {
+  if (coupon.order_sid !== null) {
     return res.json({ success: false, error: "優惠券已使用" });
   }
 
@@ -365,7 +365,6 @@ router.post("/getMemberCoupon", async (req, res) => {
     參數: 
     memberId: (必填) 會員ＩＤ, 
     type: (選填) 優惠券類型 1 => '會員', 2 => '商品', 3 => '課程'
-
     回傳:
     itemId: coupon sid in coupon_report
     menber_sid: 會員ＩＤ

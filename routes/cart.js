@@ -105,103 +105,87 @@ router.get('/member/:sid', async (req, res) => {
         const [detailsRows] = await db.query(detailsSql, [products_order_sid, id, price, quantity, name]);
       }
       // 建立給 LINE Pay
+      const productsTotal = req.body.products.reduce(
+        (total, { price, quantity }) => total + price * quantity,
+        0
+      );
+      const discounAmount = productsTotal - req.body.itemsAmount
+      console.log('req.body123456:', productsTotal)
       const linePayBody = {
         orderId: orderId,
         currency: 'TWD',
-        amount:  req.body.amount,
-        packages: req.body.products.map(({ price, quantity, name, id ,itemsAmount}) => ({
-          id: id,
-          amount:price*quantity,
-          products: [
-            {
-              name:name,
-              price:price*quantity,
-              quantity: 1,
-            }
-          ]
-        })),
+        amount: Math.round(req.body.amount),
+        packages: [
+          {
+            id: 'package1',
+            amount: Math.round(req.body.amount),
+            products: [
+              {
+                name: req.body.products[0].name,
+                price: Math.round(req.body.amount),
+                quantity: 1,
+              },
+            ],
+          },
+        ],
         redirectUrls: {
           confirmUrl: `${LINEPAY_RETURN_HOST}${LINEPAY_RETURN_CONFIRM_URL}`,
           cancelUrl: `${LINEPAY_RETURN_HOST}${LINEPAY_RETURN_CANCEL_URL}`,
         },
       };
-      console.log('req.body.products',linePayBody,)
+      // console.log('req.body.products',linePayBody,)
       // console.log('linePayBody',linePayBody);
       const uri = "/payments/request";//對應到API名稱 用於簽章
       const  { signature, headers }  = createSignature(uri, linePayBody);//重構成全域的方法
-      console.log('signature linePayBody', signature, linePayBody)
+      // console.log('signature linePayBody', signature, linePayBody)
       //發出請求的路徑
       const url = `${LINEPAY_SITE}/${LINEPAY_VERSION}${uri}`
-      console.log('url',url)
+      // console.log('url',url)
       const linePayRes = await axios.post(url, linePayBody, { headers })
-      console.log('linePayRes',linePayRes)
+      // console.log('linePayRes',linePayRes)
      //驗證路徑回應是否正確
       console.log('linePayRes.data.info',linePayRes.data.info)
       if (linePayRes?.data?.returnCode === '0000') {
-        console.log('linePayRes.data.info',linePayRes.data.info)
-        // res.redirect(linePayRes?.data?.info.paymentUrl.web)
-        // console.log('linePayRes?.data?.info.paymentUrl.web', linePayRes?.data?.info.paymentUrl.web)//幫用戶轉址(linepay付款頁面)
-        res.json({web:linePayRes?.data?.info.paymentUrl.web,amount:amount})
+      // console.log('linePayRes.data.info',linePayRes.data.info)
+      res.json({web:linePayRes?.data?.info.paymentUrl.web,amount:amount})
      }
       } catch (error) {
       console.log(error)
       //錯誤的回饋
-       res.end()
+      res.end()
       }
     })
-    
-      //轉前端頁面(抓不到)
-      router.get('/linePay/confirm/:orderId', async (req, res) => {
-        const updateSql = 'UPDATE product_order SET payment = ? WHERE orderId = ?';
-        const [updateRows] = await db.query(updateSql, ['Line pay', req.query.orderId]);
-        const { transactionId ,orderId} = req.query;
-        try {
-          const linePayBody = {
-            amount: amount,
-            currency: 'TWD',
-          };
-          const uri = `/linePay/confirm/${transactionId}`;
-          const { signature, headers } = createSignature(uri, linePayBody);
-          const url = `${LINEPAY_SITE}/${LINEPAY_VERSION}${uri}`;
-          const linePayRes = await axios.post(url, linePayBody, { headers });
-          console.log(linePayRes);
-        } catch (error) {
-          console.error(error);
-          res.sendStatus(500);
-        }
-      });
+        const createSignature = (uri, linePayBody) => {
+        const nonce = parseInt(new Date().getTime() / 1000); //隨機產生的 於簽章
+        const string = `${LINEPAY_CHANNEL_SECRET_KEY}/${LINEPAY_VERSION}${uri}${JSON.stringify(linePayBody)}${nonce}`; //建立簽章（Signature） ${LINEPAY_CHANNEL_SECRET_KEY}商店密鑰
+        const signature = Base64.stringify(HmacSHA256(string, LINEPAY_CHANNEL_SECRET_KEY)); //加密的簽章
   
-    const createSignature = (uri, linePayBody) => {
-    const nonce = parseInt(new Date().getTime() / 1000); //隨機產生的 於簽章
-    const string = `${LINEPAY_CHANNEL_SECRET_KEY}/${LINEPAY_VERSION}${uri}${JSON.stringify(linePayBody)}${nonce}`; //建立簽章（Signature） ${LINEPAY_CHANNEL_SECRET_KEY}商店密鑰
-    const signature = Base64.stringify(HmacSHA256(string, LINEPAY_CHANNEL_SECRET_KEY)); //加密的簽章
+        const headers = {
+        'Content-Type': 'application/json',
+        'X-LINE-ChannelId': LINEPAY_CHANNEL_ID,
+        'X-LINE-Authorization-Nonce': nonce,
+        'X-LINE-Authorization': signature, //加密的簽章
+      };
   
-    const headers = {
-      'Content-Type': 'application/json',
-      'X-LINE-ChannelId': LINEPAY_CHANNEL_ID,
-      'X-LINE-Authorization-Nonce': nonce,
-      'X-LINE-Authorization': signature, //加密的簽章
-    };
-  
-    return { signature, headers };
-  };
+        return { signature, headers };
+      };
   
  
     //刪除點擊到的購物車
-   router.delete('/emptyCart', async (req, res) => {
-  const { sids } = req.body;
-  const placeholders = sids.map(() => '?').join(',');
-  const sql = `DELETE FROM cart_details WHERE sid IN (${placeholders})`;
-  const [result] = await db.query(sql, sids);
-  res.json({ deletedCount: result.affectedRows });
-});
+      router.delete('/emptyCart', async (req, res) => {
+        const { sids } = req.body;
+        const placeholders = sids.map(() => '?').join(',');
+        const sql = `DELETE FROM cart_details WHERE sid IN (${placeholders})`;
+        const [result] = await db.query(sql, sids);
+        res.json({ deletedCount: result.affectedRows });
+      });
 
     
     //取得登入會員的購物車資料
-    router.get('/cart01/:m_id/:sid', async (req, res) => {
-      const sql =
+        router.get('/cart01/:m_id/:sid', async (req, res) => {
+        const sql =
         'SELECT * FROM cart_details WHERE m_id =6 AND m_id= ?';
-      try {
+        try {
         const [rows] = await db.query(sql, [req.params.m_id]);
         res.json(rows);
       } catch (err) {
@@ -217,7 +201,7 @@ router.get('/order/:orderId', async (req, res) => {
   const sql = 'SELECT * FROM product_order WHERE product_order.orderId =? '
   const [rows] = await db.query(sql, [req.params.orderId])
   res.json(rows)
-  console.log(rows)
+  console.log('rows',rows)
 })
 
 
