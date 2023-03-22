@@ -91,7 +91,9 @@ router.get("/search", async (req, res) => {
 
   const query2 = async () => {
     const desk_sql = `SELECT SUM(CEIL(people/people_contain)) AS sum2 FROM seat_all JOIN seat_table ON seat_all.table_sid = seat_table.sid ${whereClause}AND (table_sid = 2)`;
+    
     const results = await db.query(desk_sql, params);
+    // console.log(params)
     const sum2 = parseInt(results[0][0].sum2 ?? 0);
     console.log(sum2)
     let result;
@@ -138,6 +140,62 @@ router.get("/search", async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
+//驗證
+router.get("/check",async(req,res)=>{
+  const { reserveDate, period, people,table } = req.query;
+  console.log(req.query);
+  let whereClause = "WHERE ";
+  let params = [];
+  if (reserveDate) {
+    whereClause += "reserveDate = ? AND ";
+    params.push(reserveDate);
+  }
+  if (period) {
+    whereClause += "`period-sid` = ? ";
+    params.push(period);
+  }
+  let result;
+  if(table == '1'){
+    const sql = `SELECT SUM(people) AS sum1 FROM seat_all ${whereClause}AND (table_sid = 1)`
+    console.log(sql);
+    const results = await db.query(sql, params);
+    const sum1 = parseInt(results[0][0].sum1??0);
+    console.log(sum1)
+    let people_num = parseInt(people)
+    if (sum1 + people_num > 12) {result = "該時段的吧台已滿"}else{result ="ok"}
+    console.log(result)
+    res.send(result) ;
+  }else if(table == '2'){
+    const sql = `SELECT SUM(CEIL(people/people_contain)) AS sum2 FROM seat_all JOIN seat_table ON seat_all.table_sid = seat_table.sid ${whereClause}AND (table_sid = 2)`
+    const results = await db.query(sql, params);
+    const sum2 = parseInt(results[0][0].sum2 ?? 0);
+    console.log(sum2)
+    if (sum2 + Math.ceil(people / 5) > 12) {
+      result = "該時段的方桌已滿";
+    } else {
+      result = "ok";
+    }
+    // res.send(sum1)
+    console.log(result);
+    res.send(result)
+  }else if(table == '3'){
+    const sql = `SELECT COUNT(*) AS sum3 FROM seat_all ${whereClause}AND (table_sid = 3)`
+    const results = await db.query(sql, params);
+    const sum3 = parseInt(results[0][0].sum3);
+    
+    if (people > 14) {
+      result = "包廂不可超過14人";
+    } else if (sum3 + 1 > 2) {
+      result = "該時段包廂已滿";
+    } else {
+      result = "ok";
+    }
+    // res.send(sum1)
+    console.log(result);
+    res.send(result)
+  }
+})
 
 //菜單
 router.get("/menu/:category",async(req,res)=>{
