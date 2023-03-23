@@ -110,6 +110,7 @@ router.get("/classbooking", async (req, res) => {
 );
 
 
+
 // router.post("/classbooking", async (req, res) => {
 //   const sql = "SELECT * FROM `classbooking` WHERE 1";
 
@@ -121,6 +122,12 @@ router.get("/classbooking", async (req, res) => {
 // );
 
 
+//抓會員資料
+router.get("/meber/:sid", async (req, res) => {
+  const sql = "SELECT * FROM member WHERE sid = ?"
+  const [result] = await db.query(sql, [req.params.sid]);
+  res.json(result);
+});
 
 //開始自己的路由
 module.exports = router;
