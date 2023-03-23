@@ -173,11 +173,7 @@ router.get("/check",async(req,res)=>{
     const sum1 = parseInt(results[0][0].sum1??0);
     console.log(sum1)
     let people_num = parseInt(people)
-<<<<<<< HEAD
     if (sum1 + people_num > 12) {result = "該時段的吧台已滿，建議回上一頁查詢好剩餘桌數再來訂位喔！"}else{result ="ok"}
-=======
-    if (sum1 + people_num > 12) {result = "該時段的吧台已滿"}else{result ="ok"}
->>>>>>> 76ebae0aa531a61bcc9f609ff6d2a1f17c4a81a5
     console.log(result)
     res.send(result) ;
   }else if(table == '2'){
@@ -186,11 +182,7 @@ router.get("/check",async(req,res)=>{
     const sum2 = parseInt(results[0][0].sum2 ?? 0);
     console.log(sum2)
     if (sum2 + Math.ceil(people / 5) > 12) {
-<<<<<<< HEAD
       result = "該時段的方桌已滿，建議回上一頁查詢好剩餘桌數再來訂位喔！";
-=======
-      result = "該時段的方桌已滿";
->>>>>>> 76ebae0aa531a61bcc9f609ff6d2a1f17c4a81a5
     } else {
       result = "ok";
     }
@@ -205,11 +197,7 @@ router.get("/check",async(req,res)=>{
     if (people > 14) {
       result = "包廂不可超過14人";
     } else if (sum3 + 1 > 2) {
-<<<<<<< HEAD
       result = "該時段包廂已滿，建議回上一頁查詢好剩餘桌數再來訂位喔！";
-=======
-      result = "該時段包廂已滿";
->>>>>>> 76ebae0aa531a61bcc9f609ff6d2a1f17c4a81a5
     } else {
       result = "ok";
     }
