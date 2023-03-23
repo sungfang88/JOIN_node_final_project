@@ -123,7 +123,7 @@ const transporter = nodemailer.createTransport({
   console.log(process.env.CLINENTED)
   console.log(process.env.CLINENTSECRET)
   console.log(process.env.REFRESHTOKEN)
-  console.log(process.env.ACCESSTOKEN)
+  console.log(process.env.ACCESSTOKEN) 
 
 
   const options = {
@@ -575,8 +575,8 @@ router.get("/mystoredelete/:sid/:productId",async (req, res) => {
   res.json(deleting)
 
 
-
-})
+ 
+})  
 
 //會員加到 我的購物車
 router.post("/addstoretocart/:sid",async (req, res) => {
@@ -590,7 +590,7 @@ router.post("/addstoretocart/:sid",async (req, res) => {
   const [searchrows] = await db.query(searchsql, [member,product_id]);
   console.log('searchrows',searchrows)
   if(searchrows.length===0){
-      //加到購物車
+      //加到購物車  
       const sql = "INSERT INTO `cart_details`(`m_id`, `product_img`, `product_ch`, `product_eg`, `product_id`, `price`, `quantity`, `created_at`) VALUES (?,?,?,?,?,?,?,NOW())";
       const [result] = await db.query(sql, [member, imgpluswebp, product_ch, product_eg, product_id,productprice,1]);
       console.log(result) 
