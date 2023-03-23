@@ -18,6 +18,16 @@ router.get("/", (req, res) => {
   res.send("hi");
 });
 
+//訂位資格
+//Todo 超過兩筆要幹嘛
+router.get('/black/:member_sid',async(req,res)=>{
+  const{member_sid}=req.query
+  const sql = "SELECT COUNT(`status_sid`=4) FROM `seat_all` WHERE `member_sid` = ?"
+  const [result] = await db.query(sql, [req.params.member_sid]);
+  const count = result[0]['COUNT(`status_sid`=4)'];
+  res.json({ count });
+})
+
 //新增
 router.post("/seat_add", async (req, res) => {
   let { member_sid,name, phone, reserveDate, period_sid, table_sid, people, created_at } =
@@ -163,7 +173,7 @@ router.get("/check",async(req,res)=>{
     const sum1 = parseInt(results[0][0].sum1??0);
     console.log(sum1)
     let people_num = parseInt(people)
-    if (sum1 + people_num > 12) {result = "該時段的吧台已滿"}else{result ="ok"}
+    if (sum1 + people_num > 12) {result = "該時段的吧台已滿，建議回上一頁查詢好剩餘桌數再來訂位喔！"}else{result ="ok"}
     console.log(result)
     res.send(result) ;
   }else if(table == '2'){
@@ -172,7 +182,7 @@ router.get("/check",async(req,res)=>{
     const sum2 = parseInt(results[0][0].sum2 ?? 0);
     console.log(sum2)
     if (sum2 + Math.ceil(people / 5) > 12) {
-      result = "該時段的方桌已滿";
+      result = "該時段的方桌已滿，建議回上一頁查詢好剩餘桌數再來訂位喔！";
     } else {
       result = "ok";
     }
@@ -187,7 +197,7 @@ router.get("/check",async(req,res)=>{
     if (people > 14) {
       result = "包廂不可超過14人";
     } else if (sum3 + 1 > 2) {
-      result = "該時段包廂已滿";
+      result = "該時段包廂已滿，建議回上一頁查詢好剩餘桌數再來訂位喔！";
     } else {
       result = "ok";
     }
