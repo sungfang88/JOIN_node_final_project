@@ -124,9 +124,9 @@ const transporter = nodemailer.createTransport({
   console.log(process.env.CLINENTSECRET)
   console.log(process.env.REFRESHTOKEN)
   console.log(process.env.ACCESSTOKEN) 
+ 
 
-
-  const options = {
+  const options = {  
     //寄件者
     from: 'for0329front@gmail.com',
     //收件者
