@@ -724,7 +724,7 @@ router.get('/bookingseat/:sid',async(req,res)=>{
 
   res.json({
     data,
-
+ 
   });
 
 })
