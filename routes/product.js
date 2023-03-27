@@ -32,9 +32,11 @@ router.get('/api/getProductbest', async (req, res) => {
   });
 
   router.get('/api/allproduct', async (req, res) => {
-    const sql = `SELECT pm.*, pc.country_ch FROM productmanage AS pm 
+    const sql = `SELECT pm.product_id, pm.product_ch, pm.productprice, pm.product_img, pm.product_catagory_id, pc.country_id, pc.country_ch 
+    FROM productmanage AS pm 
     INNER JOIN product_country AS pc ON pm.country_id = pc.country_id 
-    ORDER BY pm.product_id ASC ;`
+    ORDER BY pm.product_id ASC;
+    `
     
     const [results] = await db.query(sql);
     
